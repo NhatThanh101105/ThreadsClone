@@ -39,7 +39,10 @@ export function useFeed(tab = "for_you") {
       // No pagination — single page only
       return undefined;
     },
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 1000 * 5, // 5 seconds
+    refetchInterval: 12000, // Poll every 12 seconds in background
+    refetchIntervalInBackground: false, // Save bandwidth/battery when tab is in background
+    refetchOnWindowFocus: true, // Auto refetch when user returns to tab
   });
 }
 

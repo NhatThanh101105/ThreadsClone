@@ -152,11 +152,15 @@ export default function DefaultLayout() {
             <LoginPanel />
           ) : (
             <div className="p-5 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xs">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-11 h-11 rounded-full bg-[var(--muted)] flex items-center justify-center font-bold text-sm text-[var(--foreground)] overflow-hidden border border-[var(--border)]">
-                  {currentUser?.avatar ? (
+              <div
+                onClick={() => navigate("/profile")}
+                className="flex items-center gap-3 mb-4 cursor-pointer hover:opacity-85 transition-opacity"
+                title="Xem trang cá nhân"
+              >
+                <div className="w-11 h-11 rounded-full bg-[var(--muted)] flex items-center justify-center font-bold text-sm text-[var(--foreground)] overflow-hidden border border-[var(--border)] shrink-0">
+                  {currentUser?.avatar_url || currentUser?.avatar ? (
                     <img
-                      src={currentUser.avatar}
+                      src={currentUser.avatar_url || currentUser.avatar}
                       alt={currentUser.name || currentUser.username}
                       className="w-full h-full object-cover"
                     />

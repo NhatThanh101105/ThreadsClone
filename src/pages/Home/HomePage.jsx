@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import copy from "copy-to-clipboard";
 import { toPng } from "html-to-image";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowUp } from "lucide-react";
 
 import PostCard from "@/components/post/PostCard";
 import CreatePostBox from "@/components/post/CreatePostBox";
@@ -54,15 +54,19 @@ export default function HomePage() {
   } = useFeed(activeTab);
 
   // Flatten all pages into a single posts array
-  const posts = data?.pages?.flatMap((page) => {
-    // Shape: { success: true, data: { data: [...], current_page, last_page } }  (paginated)
-    if (Array.isArray(page?.data?.data)) return page.data.data;
-    // Shape: { success: true, data: [...] }  (simple array)
-    if (Array.isArray(page?.data)) return page.data;
-    // Shape: bare array
-    if (Array.isArray(page)) return page;
-    return [];
-  }) ?? [];
+  const posts = useMemo(() => {
+    return (
+      data?.pages?.flatMap((page) => {
+        // Shape: { success: true, data: { data: [...], current_page, last_page } }  (paginated)
+        if (Array.isArray(page?.data?.data)) return page.data.data;
+        // Shape: { success: true, data: [...] }  (simple array)
+        if (Array.isArray(page?.data)) return page.data;
+        // Shape: bare array
+        if (Array.isArray(page)) return page;
+        return [];
+      }) ?? []
+    );
+  }, [data]);
 
   // ── Mutations ───────────────────────────────────────────────────────────────
   const likeMutation = useLikeToggle();
@@ -102,9 +106,60 @@ export default function HomePage() {
   }, [handleObserver]);
 
   // ── Reset feed when switching tabs ─────────────────────────────────────────
+  const [newPostsCount, setNewPostsCount] = useState(0);
+  const firstPostIdRef = useRef(null);
+  const isNearTopRef = useRef(true);
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
+    setNewPostsCount(0);
+    firstPostIdRef.current = null;
   }, [activeTab]);
+
+  // Monitor scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      isNearTopRef.current = window.scrollY < 120;
+      if (isNearTopRef.current && newPostsCount > 0) {
+        setNewPostsCount(0);
+        if (posts.length > 0) {
+          firstPostIdRef.current = posts[0]?.id;
+        }
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [newPostsCount, posts]);
+
+  // Check for newly polled posts
+  useEffect(() => {
+    if (!posts || posts.length === 0) return;
+
+    if (!firstPostIdRef.current) {
+      firstPostIdRef.current = posts[0]?.id;
+      return;
+    }
+
+    if (posts[0]?.id !== firstPostIdRef.current) {
+      if (isNearTopRef.current) {
+        firstPostIdRef.current = posts[0]?.id;
+        setNewPostsCount(0);
+      } else {
+        const index = posts.findIndex((p) => p.id === firstPostIdRef.current);
+        const count = index > 0 ? index : 1;
+        setNewPostsCount(count);
+      }
+    }
+  }, [posts]);
+
+  const handleScrollToTopAndRefresh = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (posts.length > 0) {
+      firstPostIdRef.current = posts[0]?.id;
+    }
+    setNewPostsCount(0);
+    refetch();
+  };
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
@@ -239,6 +294,24 @@ export default function HomePage() {
 
       {/* Quick Create Post Box */}
       <CreatePostBox onOpenCreateModal={() => setActiveModal("create")} />
+
+      {/* Floating New Posts Indicator (Auto-updates) */}
+      {newPostsCount > 0 && (
+        <div className="sticky top-14 z-20 flex justify-center py-1.5 pointer-events-none animate-in fade-in slide-in-from-top-2">
+          <button
+            type="button"
+            onClick={handleScrollToTopAndRefresh}
+            className="pointer-events-auto flex items-center gap-1.5 px-4 py-2 rounded-full bg-[var(--foreground)] text-[var(--background)] font-bold text-xs shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer border border-[var(--border)]"
+          >
+            <ArrowUp size={13} className="stroke-[3]" />
+            <span>
+              {newPostsCount > 1
+                ? `${newPostsCount} bài viết mới`
+                : "Có bài viết mới"}
+            </span>
+          </button>
+        </div>
+      )}
 
       {/* Feed Area */}
       <div className="divide-y divide-transparent">
