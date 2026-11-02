@@ -1,90 +1,118 @@
 # Threads Web Clone 🧵
 
-Dự án mô phỏng hoàn chỉnh mạng xã hội Threads (Meta) với trải nghiệm người dùng mượt mà, hỗ trợ đầy đủ các tính năng xác thực, bảng tin, đăng bài kèm ảnh và GIPHY GIF, tương tác đa cấp, trang hoạt động và quản lý trang cá nhân.
+A feature-rich, high-performance web clone of Meta's **Threads**, built with **React 19**, **Vite**, **Tailwind CSS v4**, **Redux Toolkit**, and **TanStack React Query**.
 
 ---
 
-## 🚀 Tính năng nổi bật
+## ✨ Features
 
-- **Xác thực người dùng (Authentication):**
-  - Đăng ký, đăng nhập tài khoản.
-  - Tự động lưu phiên đăng nhập và làm mới token ngầm (Refresh Token Interceptor).
-  - Quên mật khẩu, đặt lại mật khẩu và xác thực email.
-- **Bảng tin (Feed):**
-  - Tab *Dành cho bạn* (For You), *Đang theo dõi* (Following), *Chế độ ẩn danh* (Ghost mode).
-  - Tải trang mượt mà với phân trang vô tận (Infinite Scroll).
-- **Soạn thảo & Đăng bài viết (Create Post):**
-  - Đăng bài viết dạng văn bản, hỗ trợ bài viết ẩn danh (Ghost post).
-  - **Tải ảnh trực tiếp từ thiết bị:** Xem trước tức thì (preview) và tải lên máy chủ qua `multipart/form-data`.
-  - **Tích hợp GIPHY GIF:** Tìm kiếm GIF động theo từ khóa, duyệt theo chủ đề thịnh hành hoặc dán link trực tiếp.
-- **Tương tác toàn diện (Interactions):**
-  - Thả tim (Like), Đăng lại (Repost), Trích dẫn (Quote kèm ảnh/GIF).
-  - Trả lời (Reply) bình luận nhiều cấp.
-  - Sao chép liên kết bài viết và xuất bài viết dưới dạng thẻ ảnh.
-- **Trang hoạt động (Activity Page):**
-  - Bộ lọc thông minh: Tất cả, Theo dõi, Câu trả lời, Lượt thích, Đăng lại, Trích dẫn, Đã xác minh.
-  - Nút *Theo dõi lại* / *Đang theo dõi* tương tác tức thì.
-- **Trang cá nhân (Profile Page):**
-  - Chỉnh sửa hồ sơ: Tên hiển thị, tiểu sử, chế độ tài khoản riêng tư.
-  - **Upload ảnh đại diện (Avatar):** Tải ảnh trực tiếp và cập nhật ngay lập tức.
-  - Quản lý bài viết của tôi: Chỉnh sửa nội dung và xóa bài viết.
-  - Xem trang cá nhân người dùng khác qua định dạng `/@username`.
-- **Tìm kiếm (Search):**
-  - Tìm kiếm người dùng và bài viết với cơ chế Debounce tối ưu hiệu năng.
-- **Tùy biến giao diện (UI/UX):**
-  - Chuyển đổi giao diện Sáng / Tối (Light & Dark theme).
-  - Hỗ trợ đa ngôn ngữ (Tiếng Việt & Tiếng Anh).
+### 🔐 Authentication & Session
+- **Account Registration & Login:** Form validation with React Hook Form and Zod.
+- **Silent Token Refresh:** Custom Axios request/response interceptors handle JWT auto-refresh and session restoration seamlessly without disrupting user interactions.
+- **Password Reset & Email Verification:** Complete flow for forgotten password requests and email token verification.
+
+### 📱 Feed & Timeline
+- **For You & Following Feeds:** Infinite scrolling powered by Intersection Observer and TanStack React Query pagination.
+- **Ghost Mode Feed:** Filter and view anonymous threads.
+- **Optimistic Interactions:** Instant UI feedback for likes, saves, and reposts.
+
+### ✍️ Post Creation & Rich Media
+- **Standard & Ghost Threads:** Post publicly or anonymously.
+- **Direct Image & Video Upload:** Instant local preview with client-side blob generation; uploads binary files directly via `multipart/form-data` to ensure server compatibility.
+- **GIPHY GIF Integration:** Built-in interactive GIPHY picker supporting real-time keyword search, categorized trending collections, and direct GIF link embeds.
+
+### 💬 Social Interactions
+- **Nested Replies:** Multi-level thread replies with quick-reply inline boxes.
+- **Quote & Repost:** Repost directly or quote with added text, images, or GIFs.
+- **Share Options:** Instant thread URL copying and HTML-to-Image card export.
+
+### 🔔 Activity & Notifications
+- **Categorized Activity Feed:** Filter by All, Follows, Replies, Likes, Reposts, Quotes, and Verified interactions.
+- **Real-time & Optimistic Follows:** Direct "Follow Back" / "Following" toggles connected with the backend API.
+- **Live User Thread Events:** Surfaces interactions and engagement metrics on the user's threads.
+
+### 👤 Profile Management
+- **Customizable Profiles:** Update display name, bio, and private account status.
+- **Avatar Upload:** Direct multipart file upload with preview and instant profile synchronization.
+- **Profile Tabs:** Filter user history by Threads, Replies, and Reposts.
+- **Public Profiles:** Access any user via `/@username` routes.
+
+### 🔍 Search & Exploration
+- **Debounced Search:** Real-time query debouncing (500ms) for finding accounts and thread content.
+
+### 🎨 Theming & Internationalization
+- **Dark / Light Mode:** Automatic system preference detection with manual toggle persisted in `localStorage`.
+- **Multilingual Support:** Seamless switching between Vietnamese and English powered by `i18next`.
 
 ---
 
-## 🛠️ Công nghệ sử dụng
+## 🛠️ Tech Stack
 
-- **Frontend:** React 19, Vite 8, React Router v8
-- **State Management & Data Fetching:** Redux Toolkit, TanStack Query (React Query v5)
+- **Framework:** React 19, Vite 8
+- **Routing:** React Router v8
+- **State Management:** Redux Toolkit
+- **Data Fetching:** TanStack React Query v5
 - **Styling:** Tailwind CSS v4, Lucide React Icons
-- **Form & Validation:** React Hook Form, Zod
-- **API Client:** Axios (Custom Interceptors cho Token Refresh và Multipart Boundary)
-- **Deployment:** Vercel
+- **HTTP Client:** Axios (Custom JWT Interceptors & FormData boundary management)
+- **Forms & Validation:** React Hook Form, Zod
+- **Notifications:** Sonner Toasts
+- **Utilities:** `html-to-image`, `copy-to-clipboard`, `i18next`
 
 ---
 
-## 💻 Cài đặt và chạy dự án cục bộ
+## 🚀 Getting Started
 
-1. **Clone repository:**
+### Prerequisites
+- Node.js (v18 or higher recommended)
+- npm, yarn, or pnpm
+
+### Installation
+
+1. **Clone the repository:**
    ```bash
    git clone https://github.com/NhatThanh101105/ThreadsClone.git
    cd ThreadsClone
    ```
 
-2. **Cài đặt dependencies:**
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-3. **Cấu hình môi trường:**
-   Tạo file `.env` với nội dung:
+3. **Configure environment variables:**
+   Create a `.env` file in the project root:
    ```env
    VITE_API_BASE_URL=https://threads.f8team.dev
    ```
 
-4. **Khởi chạy môi trường phát triển:**
+4. **Start development server:**
    ```bash
    npm run dev
    ```
 
-5. **Build dự án cho Production:**
+5. **Build for production:**
    ```bash
    npm run build
    ```
 
 ---
 
-## 🌐 Triển khai lên Vercel (Deployment)
+## 🌐 Deployment on Vercel
 
-Dự án đã được cấu hình sẵn file `vercel.json` phục vụ client-side routing cho Single Page Application (SPA).
+The repository includes a [vercel.json](vercel.json) file preconfigured for Single Page Application (SPA) client-side routing.
 
-1. Kết nối repository `NhatThanh101105/ThreadsClone` trên dashboard của [Vercel](https://vercel.com).
-2. Thêm biến môi trường:
+1. Import this repository into [Vercel](https://vercel.com).
+2. Configure project settings:
+   - **Framework Preset:** Vite
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+3. Add Environment Variable:
    - **Key:** `VITE_API_BASE_URL`
    - **Value:** `https://threads.f8team.dev`
-3. Nhấn **Deploy**.
+4. Click **Deploy**.
+
+---
+
+## 📄 License
+
+This project is created for educational and portfolio demonstration purposes. All visual identity rights belong to Meta Platforms, Inc.
