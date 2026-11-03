@@ -51,17 +51,17 @@ export default function ProfilePage() {
   const [selectedPost, setSelectedPost] = useState(null);
 
   // Target user determination
+  const cleanUsername = paramUsername ? paramUsername.replace(/^@/, "") : "";
   const isSelf =
     !paramUsername ||
     Boolean(
       currentUser &&
-        (currentUser.username?.toLowerCase() === paramUsername?.toLowerCase() ||
-          `@${currentUser.username?.toLowerCase()}` === paramUsername?.toLowerCase())
+        currentUser.username?.toLowerCase() === cleanUsername.toLowerCase()
     );
 
   const targetUsername = isSelf
     ? currentUser?.username
-    : paramUsername?.replace(/^@/, "");
+    : cleanUsername;
 
   const targetUserId = isSelf ? currentUser?.id : null;
 

@@ -41,19 +41,18 @@ export default function AppRoutes() {
         <Route path="/search" element={<SearchPage />} />
         <Route path="/posts/:postId" element={<PostDetailPage />} />
         <Route path="/:username/post/:postId" element={<PostDetailPage />} />
-        <Route path="/@:username/post/:postId" element={<PostDetailPage />} />
-        <Route path="/@:username" element={<ProfilePage />} />
         {/* Protected routes wrapped in ProtectedRoute */}
         <Route element={<ProtectedRoute />}>
           <Route path="/activity" element={<ActivityPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
+        {/* Dynamic user profile route (matches /@username and /username) */}
+        <Route path="/:username" element={<ProfilePage />} />
       </Route>
 
       {/* Embed route with EmbedLayout */}
       <Route element={<EmbedLayout />}>
         <Route path="/:username/post/:postId/embed" element={<EmbedPage />} />
-        <Route path="/@:username/post/:postId/embed" element={<EmbedPage />} />
         <Route path="/posts/:postId/embed" element={<EmbedPage />} />
       </Route>
 
