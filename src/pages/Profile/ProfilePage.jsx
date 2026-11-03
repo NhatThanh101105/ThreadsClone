@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import copy from "copy-to-clipboard";
@@ -11,6 +11,7 @@ import {
   Loader2,
   UserPlus,
   Lock,
+  Repeat2,
 } from "lucide-react";
 
 import PostCard from "@/components/post/PostCard";
@@ -52,9 +53,11 @@ export default function ProfilePage() {
   // Target user determination
   const isSelf =
     !paramUsername ||
-    (currentUser &&
-      (currentUser.username === paramUsername ||
-        `@${currentUser.username}` === paramUsername));
+    Boolean(
+      currentUser &&
+        (currentUser.username?.toLowerCase() === paramUsername?.toLowerCase() ||
+          `@${currentUser.username?.toLowerCase()}` === paramUsername?.toLowerCase())
+    );
 
   const targetUsername = isSelf
     ? currentUser?.username
@@ -72,13 +75,76 @@ export default function ProfilePage() {
     refetch: refetchPosts,
   } = useUserPosts(targetUsername, targetUserId);
 
-  const posts =
-    data?.pages?.flatMap((page) => {
-      if (Array.isArray(page?.data?.data)) return page.data.data;
-      if (Array.isArray(page?.data)) return page.data;
-      if (Array.isArray(page)) return page;
-      return [];
-    }) ?? [];
+  const posts = useMemo(() => {
+    return (
+      data?.pages?.flatMap((page) => {
+        if (Array.isArray(page?.data?.data)) return page.data.data;
+        if (Array.isArray(page?.data)) return page.data;
+        if (Array.isArray(page)) return page;
+        return [];
+      }) ?? []
+    );
+  }, [data]);
+
+  // 1. All posts related strictly to target user: authored, quoted, or reposted by user
+  const userRelatedPosts = useMemo(() => {
+    const targetLower = targetUsername?.toLowerCase();
+    return posts.filter((p) => {
+      const authorUsername = p.user?.username?.toLowerCase();
+      const isAuthor =
+        (targetLower && authorUsername === targetLower) ||
+        (targetUserId && p.user_id === targetUserId);
+      const isQuote =
+        Boolean(p.is_quote) &&
+        ((targetLower && authorUsername === targetLower) ||
+          (targetUserId && p.user_id === targetUserId));
+      const isRepost = isSelf && Boolean(p.is_reposted);
+
+      return isAuthor || isQuote || isRepost;
+    });
+  }, [posts, targetUsername, targetUserId, isSelf]);
+
+  // 2. Filter posts strictly by active tab
+  const filteredPosts = useMemo(() => {
+    const targetLower = targetUsername?.toLowerCase();
+
+    if (activeTab === "threads") {
+      // Chỉ hiện bài viết chính do user đăng (không phải câu trả lời, không phải quote)
+      return userRelatedPosts.filter((p) => {
+        const authorUsername = p.user?.username?.toLowerCase();
+        const isAuthor =
+          (targetLower && authorUsername === targetLower) ||
+          (targetUserId && p.user_id === targetUserId);
+        return isAuthor && !p.parent_id && !p.is_quote;
+      });
+    }
+
+    if (activeTab === "replies") {
+      // Chỉ hiện câu trả lời / bình luận do user đăng
+      return userRelatedPosts.filter((p) => {
+        const authorUsername = p.user?.username?.toLowerCase();
+        const isAuthor =
+          (targetLower && authorUsername === targetLower) ||
+          (targetUserId && p.user_id === targetUserId);
+        return isAuthor && Boolean(p.parent_id);
+      });
+    }
+
+    if (activeTab === "reposts") {
+      // Chỉ hiện bài viết user đã Đăng lại hoặc Trích dẫn (Quote)
+      return userRelatedPosts.filter((p) => {
+        const authorUsername = p.user?.username?.toLowerCase();
+        const isQuote =
+          Boolean(p.is_quote) &&
+          ((targetLower && authorUsername === targetLower) ||
+            (targetUserId && p.user_id === targetUserId));
+        const isRepost = Boolean(p.is_reposted);
+        return isQuote || isRepost;
+      });
+    }
+
+    return userRelatedPosts;
+  }, [userRelatedPosts, activeTab, targetUsername, targetUserId]);
 
   const likeMutation = useLikeToggle();
   const repostMutation = useRepostToggle();
@@ -89,6 +155,13 @@ export default function ProfilePage() {
   const updateProfileMutation = useUpdateProfile();
   const replyMutation = useReplyPost();
   const quoteMutation = useQuotePost();
+
+  // Auto-fetch next page if we don't have enough posts for this user yet
+  useEffect(() => {
+    if (hasNextPage && !isFetchingNextPage && userRelatedPosts.length < 15) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, userRelatedPosts.length, fetchNextPage]);
 
   // ── Infinite scroll sentinel ────────────────────────────────────────────────
   const loadMoreRef = useRef(null);
@@ -115,10 +188,10 @@ export default function ProfilePage() {
     };
   }, [handleObserver]);
 
-  // Display user info (use currentUser if self, else derived from posts)
+  // Display user info (use currentUser if self, else derived from user's actual post)
   const displayUser = isSelf
     ? currentUser
-    : posts[0]?.user || { username: targetUsername, name: targetUsername };
+    : userRelatedPosts[0]?.user || { username: targetUsername, name: targetUsername };
 
   const displayName = displayUser?.name || displayUser?.username || "User";
   const displayAvatar = displayUser?.avatar_url || displayUser?.avatar;
@@ -333,62 +406,81 @@ export default function ProfilePage() {
         )}
 
         {/* Empty state */}
-        {!isPostsLoading && posts.length === 0 && (
+        {!isPostsLoading && filteredPosts.length === 0 && (
           <div className="py-16 text-center text-sm text-[var(--muted-foreground)]">
-            {activeTab === "threads"
-              ? isSelf
+            {activeTab === "threads" &&
+              (isSelf
                 ? "Bạn chưa có bài viết nào. Hãy tạo bài viết đầu tiên!"
-                : `@${targetUsername} chưa đăng bài viết nào.`
-              : "Chưa có hoạt động nào trong mục này."}
+                : `@${targetUsername} chưa đăng bài viết nào.`)}
+            {activeTab === "replies" &&
+              (isSelf
+                ? "Bạn chưa có câu trả lời nào."
+                : `@${targetUsername} chưa có câu trả lời nào.`)}
+            {activeTab === "reposts" &&
+              (isSelf
+                ? "Bạn chưa đăng lại hoặc trích dẫn bài viết nào."
+                : `@${targetUsername} chưa đăng lại bài viết nào.`)}
           </div>
         )}
 
         {/* User Post list */}
-        {posts.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            onLikeToggle={(id) =>
-              likeMutation.mutate({ postId: id, isLiked: Boolean(post.is_liked) })
-            }
-            onRepostToggle={(id) =>
-              repostMutation.mutate({
-                postId: id,
-                isReposted: Boolean(post.is_reposted),
-              })
-            }
-            onSaveToggle={(id) =>
-              saveMutation.mutate({
-                postId: id,
-                isSaved: Boolean(post.is_saved),
-              })
-            }
-            onOpenReply={(p) => {
-              setSelectedPost(p);
-              setActiveModal("reply");
-            }}
-            onOpenQuote={(p) => {
-              setSelectedPost(p);
-              setActiveModal("quote");
-            }}
-            onOpenDeleteModal={(p) => {
-              setSelectedPost(p);
-              setActiveModal("deletePost");
-            }}
-            onOpenEditModal={(p) => {
-              setSelectedPost(p);
-              setActiveModal("editPost");
-            }}
-            onOpenEmbedModal={(p) => {
-              setSelectedPost(p);
-              setActiveModal("embed");
-            }}
-            onCopyLink={() => {
-              const shareUrl = `${window.location.origin}/@${targetUsername}/post/${post.id}`;
-              copy(shareUrl);
-              toast.success("Đã sao chép liên kết vào bộ nhớ tạm!");
-            }}
-          />
+        {filteredPosts.map((post) => (
+          <div key={post.id} className="relative">
+            {activeTab === "reposts" && (
+              <div className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)] font-medium pt-3 pb-0.5 px-3 sm:px-4">
+                <Repeat2 size={13} className="text-emerald-500 shrink-0" />
+                <span>
+                  {post.is_quote
+                    ? `${displayName} đã trích dẫn`
+                    : `${displayName} đã đăng lại`}
+                </span>
+              </div>
+            )}
+            <PostCard
+              post={post}
+              onLikeToggle={(id) =>
+                likeMutation.mutate({ postId: id, isLiked: Boolean(post.is_liked) })
+              }
+              onRepostToggle={(id) =>
+                repostMutation.mutate({
+                  postId: id,
+                  isReposted: Boolean(post.is_reposted),
+                })
+              }
+              onSaveToggle={(id) =>
+                saveMutation.mutate({
+                  postId: id,
+                  isSaved: Boolean(post.is_saved),
+                })
+              }
+              onOpenReply={(p) => {
+                setSelectedPost(p);
+                setActiveModal("reply");
+              }}
+              onOpenQuote={(p) => {
+                setSelectedPost(p);
+                setActiveModal("quote");
+              }}
+              onOpenDeleteModal={(p) => {
+                setSelectedPost(p);
+                setActiveModal("deletePost");
+              }}
+              onOpenEditModal={(p) => {
+                setSelectedPost(p);
+                setActiveModal("editPost");
+              }}
+              onOpenEmbedModal={(p) => {
+                setSelectedPost(p);
+                setActiveModal("embed");
+              }}
+              onCopyLink={() => {
+                const authorUsername = post.user?.username || targetUsername;
+                const shareUrl = `${window.location.origin}/@${authorUsername}/post/${post.id}`;
+                copy(shareUrl);
+                toast.success("Đã sao chép liên kết vào bộ nhớ tạm!");
+              }}
+            />
+          </div>
         ))}
 
         {/* Infinite scroll sentinel */}
