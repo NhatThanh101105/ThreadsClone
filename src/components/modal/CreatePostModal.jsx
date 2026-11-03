@@ -110,7 +110,7 @@ export default function CreatePostModal({
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-[var(--border)] mb-4">
           <h3 className="font-bold text-sm text-[var(--foreground)]">
-            {isGhost ? "Bài viết ẩn danh mới" : "Bài viết mới"}
+            {isGhost ? t("feed.newGhostPost") : t("feed.newPost")}
           </h3>
           <button
             onClick={onClose}
@@ -147,7 +147,7 @@ export default function CreatePostModal({
                 </span>
                 {isGhost && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                    <Ghost size={11} /> Ẩn danh
+                    <Ghost size={11} /> {t("feed.anonymous")}
                   </span>
                 )}
               </div>
@@ -155,7 +155,7 @@ export default function CreatePostModal({
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Có gì mới? Bắt đầu chuỗi bài viết..."
+                placeholder={t("feed.whatsNew")}
                 disabled={isSubmitting}
                 rows={4}
                 className="w-full bg-transparent border-0 text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:ring-0 focus:outline-none resize-none"
@@ -191,7 +191,7 @@ export default function CreatePostModal({
                     type="url"
                     value={mediaInput}
                     onChange={(e) => setMediaInput(e.target.value)}
-                    placeholder="Dán link ảnh (https://...)"
+                    placeholder={t("feed.pasteImageUrl")}
                     className="flex-1 px-3 py-1.5 rounded-xl bg-[var(--muted)] border border-[var(--border)] text-xs text-[var(--foreground)] focus:outline-none"
                     onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddMediaUrl())}
                   />
@@ -200,7 +200,7 @@ export default function CreatePostModal({
                     onClick={handleAddMediaUrl}
                     className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[var(--accent)] hover:opacity-80 cursor-pointer"
                   >
-                    Thêm
+                    {t("feed.add")}
                   </button>
                 </div>
               )}
@@ -228,7 +228,7 @@ export default function CreatePostModal({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  title="Tải lên ảnh / video"
+                  title={t("feed.uploadMedia")}
                   className="p-1.5 rounded-lg hover:text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors cursor-pointer"
                 >
                   <ImageIcon size={18} />
@@ -239,7 +239,7 @@ export default function CreatePostModal({
                     setShowGifPicker(!showGifPicker);
                     setShowMediaInput(false);
                   }}
-                  title="Chọn ảnh GIF từ GIPHY"
+                  title={t("feed.selectGif")}
                   className={`px-2 py-1 text-[11px] font-bold rounded-lg transition-colors cursor-pointer border ${
                     showGifPicker
                       ? "bg-[var(--foreground)] text-[var(--background)] border-transparent"
@@ -254,7 +254,7 @@ export default function CreatePostModal({
                     setShowMediaInput(!showMediaInput);
                     setShowGifPicker(false);
                   }}
-                  title="Dán link ảnh"
+                  title={t("feed.pasteImageLink")}
                   className={`p-1.5 text-xs rounded-lg transition-colors cursor-pointer ${
                     showMediaInput
                       ? "bg-[var(--foreground)] text-[var(--background)]"
@@ -266,7 +266,7 @@ export default function CreatePostModal({
                 <button
                   type="button"
                   onClick={() => setIsGhost(!isGhost)}
-                  title={isGhost ? "Tắt chế độ ẩn danh" : "Bật chế độ ẩn danh (Ghost)"}
+                  title={isGhost ? t("feed.turnOffGhost") : t("feed.turnOnGhost")}
                   className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                     isGhost
                       ? "text-purple-400 bg-purple-500/10 font-bold"
@@ -284,7 +284,7 @@ export default function CreatePostModal({
         <div className="flex items-center justify-between pt-4 mt-2 border-t border-[var(--border)]">
           <div className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
             <Globe size={13} />
-            <span>Bất kỳ ai cũng có thể trả lời</span>
+            <span>{t("feed.anyoneCanReply")}</span>
           </div>
 
           <button
@@ -296,10 +296,10 @@ export default function CreatePostModal({
             {isSubmitting ? (
               <>
                 <Loader2 size={14} className="animate-spin" />
-                <span>Đang đăng...</span>
+                <span>{t("feed.posting")}</span>
               </>
             ) : (
-              <span>Đăng</span>
+              <span>{t("feed.post")}</span>
             )}
           </button>
         </div>

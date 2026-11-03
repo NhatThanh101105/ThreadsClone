@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { X, Camera, Lock, Globe, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -9,6 +10,7 @@ export default function EditProfileModal({
   onSave,
   isSaving = false,
 }) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -35,7 +37,7 @@ export default function EditProfileModal({
     setAvatarFile(file);
     const previewUrl = URL.createObjectURL(file);
     setAvatarUrl(previewUrl);
-    toast.info("Đã chọn ảnh mới. Bấm 'Lưu thông tin' để hoàn tất!");
+    toast.info(t("profile.editModal.selectedPhotoToast"));
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -57,11 +59,12 @@ export default function EditProfileModal({
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-[var(--border)] mb-4">
           <h3 className="font-bold text-base text-[var(--foreground)]">
-            Chỉnh sửa trang cá nhân
+            {t("profile.editModal.title")}
           </h3>
           <button
             onClick={onClose}
             type="button"
+            aria-label={t("common.close")}
             className="p-1 rounded-full hover:bg-[var(--accent)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors cursor-pointer"
           >
             <X size={18} />
@@ -107,14 +110,14 @@ export default function EditProfileModal({
 
             <div className="flex-1">
               <p className="font-semibold text-sm text-[var(--foreground)]">
-                Ảnh đại diện
+                {t("profile.editModal.avatar")}
               </p>
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="text-xs text-[var(--primary)] hover:underline mt-0.5 cursor-pointer font-medium"
               >
-                Đổi ảnh đại diện
+                {t("profile.editModal.changeAvatar")}
               </button>
             </div>
           </div>
@@ -122,13 +125,13 @@ export default function EditProfileModal({
           {/* Name Field */}
           <div>
             <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
-              Tên hiển thị
+              {t("profile.editModal.nameLabel")}
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Tên của bạn"
+              placeholder={t("profile.editModal.namePlaceholder")}
               maxLength={50}
               className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             />
@@ -137,13 +140,13 @@ export default function EditProfileModal({
           {/* Bio Field */}
           <div>
             <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
-              Tiểu sử
+              {t("profile.editModal.bioLabel")}
             </label>
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               rows={3}
-              placeholder="+ Viết tiểu sử để giới thiệu bản thân..."
+              placeholder={t("profile.editModal.bioPlaceholder")}
               maxLength={160}
               className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] resize-none"
             />
@@ -162,12 +165,12 @@ export default function EditProfileModal({
               )}
               <div>
                 <p className="text-xs font-semibold text-[var(--foreground)]">
-                  Trang cá nhân riêng tư
+                  {t("profile.editModal.privateAccount")}
                 </p>
                 <p className="text-[11px] text-[var(--muted-foreground)]">
                   {isPrivate
-                    ? "Chỉ những người được phê duyệt mới có thể xem nội dung của bạn."
-                    : "Bất kỳ ai trên Threads cũng có thể xem trang của bạn."}
+                    ? t("profile.editModal.privateDesc")
+                    : t("profile.editModal.publicDesc")}
                 </p>
               </div>
             </div>
@@ -197,7 +200,7 @@ export default function EditProfileModal({
               disabled={isSaving}
               className="px-4 py-2 rounded-xl text-xs font-semibold hover:bg-[var(--accent)] text-[var(--foreground)] transition-colors cursor-pointer"
             >
-              Hủy
+              {t("profile.editModal.cancel")}
             </button>
             <button
               type="submit"
@@ -205,7 +208,7 @@ export default function EditProfileModal({
               className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 disabled:opacity-40 transition-opacity cursor-pointer flex items-center gap-1.5"
             >
               {isSaving && <Loader2 size={14} className="animate-spin" />}
-              <span>Lưu thông tin</span>
+              <span>{isSaving ? t("profile.editModal.saving") : t("profile.editModal.save")}</span>
             </button>
           </div>
         </form>

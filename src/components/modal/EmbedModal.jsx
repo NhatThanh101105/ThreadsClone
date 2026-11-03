@@ -20,7 +20,7 @@ export default function EmbedModal({ isOpen, onClose, post }) {
   const handleCopyCode = () => {
     copy(embedCode);
     setCopied(true);
-    toast.success("Đã sao chép mã nhúng vào bộ nhớ tạm!");
+    toast.success(t("modal.codeCopied"));
     setTimeout(() => setCopied(false), 2000);
   };
 

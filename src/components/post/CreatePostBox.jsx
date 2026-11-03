@@ -1,8 +1,10 @@
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import { Image, Ghost } from "lucide-react";
 
 export default function CreatePostBox({ onOpenCreateModal }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated, currentUser } = useSelector((state) => state.auth);
 
@@ -39,7 +41,7 @@ export default function CreatePostBox({ onOpenCreateModal }) {
 
         {/* Placeholder input */}
         <div className="flex-1 text-sm text-[var(--muted-foreground)] select-none">
-          {isAuthenticated ? "Có gì mới? Bắt đầu chuỗi bài viết..." : "Đăng nhập để bắt đầu bài viết..."}
+          {isAuthenticated ? t("feed.whatsNew") : t("feed.loginToPost")}
         </div>
 
         {/* Quick action buttons */}
@@ -47,7 +49,7 @@ export default function CreatePostBox({ onOpenCreateModal }) {
           <button
             type="button"
             className="p-1.5 rounded-lg hover:text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors"
-            title="Hình ảnh"
+            title={t("feed.image")}
           >
             <Image size={18} />
           </button>
@@ -60,12 +62,12 @@ export default function CreatePostBox({ onOpenCreateModal }) {
           <button
             type="button"
             className="p-1.5 rounded-lg hover:text-[var(--foreground)] hover:bg-[var(--accent)] transition-colors"
-            title="Chế độ ẩn danh"
+            title={t("feed.ghostMode")}
           >
             <Ghost size={18} />
           </button>
           <span className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-[var(--muted)] text-[var(--foreground)] border border-[var(--border)] ml-1">
-            Đăng
+            {t("feed.post")}
           </span>
         </div>
       </div>

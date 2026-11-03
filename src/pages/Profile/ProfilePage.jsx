@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
+import { useTranslation } from "react-i18next";
 import copy from "copy-to-clipboard";
 import { toast } from "sonner";
 import {
@@ -37,6 +38,7 @@ import {
 import { setCurrentUser, fetchCurrentUser } from "@/store/slices/authSlice";
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const { username: paramUsername } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -203,7 +205,7 @@ export default function ProfilePage() {
   const handleShareProfile = () => {
     const profileUrl = `${window.location.origin}/@${targetUsername}`;
     copy(profileUrl);
-    toast.success("Đã sao chép liên kết trang cá nhân!");
+    toast.success(t("profile.linkCopied"));
   };
 
   const handleSaveProfile = (formData) => {
@@ -280,7 +282,7 @@ export default function ProfilePage() {
                 <Lock
                   size={15}
                   className="text-[var(--muted-foreground)] shrink-0"
-                  title="Tài khoản riêng tư"
+                  title={t("profile.privateAccount")}
                 />
               )}
             </h1>
@@ -300,7 +302,7 @@ export default function ProfilePage() {
             ) : (
               isSelf && (
                 <p className="text-xs text-[var(--muted-foreground)] italic pt-2">
-                  Chưa có tiểu sử. Bấm chỉnh sửa để giới thiệu bản thân...
+                  {t("profile.noBio")}
                 </p>
               )
             )}
@@ -330,13 +332,13 @@ export default function ProfilePage() {
                 className="flex-1 py-2 px-4 rounded-xl border border-[var(--border)] text-xs font-semibold hover:bg-[var(--accent)] text-[var(--foreground)] transition-colors cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <Edit3 size={14} />
-                <span>Chỉnh sửa trang cá nhân</span>
+                <span>{t("profile.editProfile")}</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleShareProfile}
-                title="Chia sẻ trang cá nhân"
+                title={t("profile.shareProfile")}
                 className="py-2 px-3 rounded-xl border border-[var(--border)] text-xs font-semibold hover:bg-[var(--accent)] text-[var(--foreground)] transition-colors cursor-pointer flex items-center justify-center"
               >
                 <Share2 size={15} />
@@ -350,13 +352,13 @@ export default function ProfilePage() {
                 className="flex-1 py-2 px-4 rounded-xl text-xs font-semibold bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 transition-opacity cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <UserPlus size={14} />
-                <span>Theo dõi</span>
+                <span>{displayUser?.is_following ? t("profile.following") : t("profile.follow")}</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleShareProfile}
-                title="Sao chép liên kết"
+                title={t("profile.copyLink")}
                 className="py-2 px-3 rounded-xl border border-[var(--border)] text-xs font-semibold hover:bg-[var(--accent)] text-[var(--foreground)] transition-colors cursor-pointer flex items-center justify-center"
               >
                 <Copy size={15} />
@@ -369,9 +371,9 @@ export default function ProfilePage() {
       {/* ── Profile Tabs ─────────────────────────────────────────────────────── */}
       <div className="flex border-b border-[var(--border)] mb-4">
         {[
-          { id: "threads", label: "Bài viết" },
-          { id: "replies", label: "Câu trả lời" },
-          { id: "reposts", label: "Đã đăng lại" },
+          { id: "threads", label: t("profile.threadsTab") },
+          { id: "replies", label: t("profile.repliesTab") },
+          { id: "reposts", label: t("profile.repostsTab") },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -410,16 +412,16 @@ export default function ProfilePage() {
           <div className="py-16 text-center text-sm text-[var(--muted-foreground)]">
             {activeTab === "threads" &&
               (isSelf
-                ? "Bạn chưa có bài viết nào. Hãy tạo bài viết đầu tiên!"
-                : `@${targetUsername} chưa đăng bài viết nào.`)}
+                ? t("profile.emptyThreadsSelf")
+                : t("profile.emptyThreadsOther", { username: targetUsername }))}
             {activeTab === "replies" &&
               (isSelf
-                ? "Bạn chưa có câu trả lời nào."
-                : `@${targetUsername} chưa có câu trả lời nào.`)}
+                ? t("profile.emptyRepliesSelf")
+                : t("profile.emptyRepliesOther", { username: targetUsername }))}
             {activeTab === "reposts" &&
               (isSelf
-                ? "Bạn chưa đăng lại hoặc trích dẫn bài viết nào."
-                : `@${targetUsername} chưa đăng lại bài viết nào.`)}
+                ? t("profile.emptyRepostsSelf")
+                : t("profile.emptyRepostsOther", { username: targetUsername }))}
           </div>
         )}
 
@@ -431,8 +433,8 @@ export default function ProfilePage() {
                 <Repeat2 size={13} className="text-emerald-500 shrink-0" />
                 <span>
                   {post.is_quote
-                    ? `${displayName} đã trích dẫn`
-                    : `${displayName} đã đăng lại`}
+                    ? `${displayName} ${t("profile.quoted")}`
+                    : `${displayName} ${t("profile.reposted")}`}
                 </span>
               </div>
             )}
@@ -477,7 +479,7 @@ export default function ProfilePage() {
                 const authorUsername = post.user?.username || targetUsername;
                 const shareUrl = `${window.location.origin}/@${authorUsername}/post/${post.id}`;
                 copy(shareUrl);
-                toast.success("Đã sao chép liên kết vào bộ nhớ tạm!");
+                toast.success(t("profile.postLinkCopied"));
               }}
             />
           </div>
